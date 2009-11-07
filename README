@@ -1,0 +1,35 @@
+README
+
+This project contains the data and statistical analyses used by the
+MLAO to study the School District of Mt. Lebanon, Pennsylvania.  For
+more information about the MLAO, see
+
+    http://www.mlao.org/
+
+
+REQUIREMENTS
+
+To run the analyses in this project, you will need a Unix-like
+operating system (e.g., Linux or Mac OS X) and the following software:
+
+* The R statistical computing system
+  http://www.r-project.org/
+
+* The ggplot2 package for R
+  http://had.co.nz/ggplot2/
+
+* GNU Make (probably already installed on your computer)
+  http://www.gnu.org/software/make/
+
+
+RUNNING THE ANALYSES
+
+Enter "make" at the command prompt.  The analyses should run,
+producing results on standard output and statistical graphs saved to
+the file system in PDF and PNG files.
+
+
+QUESTIONS
+
+If you have any questions about these data or analyses, please
+direct them to Tom Moertel <tom@mlao.org>.
