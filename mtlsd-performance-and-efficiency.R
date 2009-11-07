@@ -194,3 +194,7 @@ qplot(value, Tuition, data=pssa.all.melted.vs.tuition,
 ggsave(file="mtlsd-2009-pssa-scores-vs-tuition.png",
        plot = plot.ed.eff,
        width=8, height=10, dpi=100)
+
+ggsave(file="mtlsd-2009-pssa-scores-vs-tuition.pdf",
+       plot = plot.ed.eff,
+       width=8.5, height=11)

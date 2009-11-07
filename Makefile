@@ -13,7 +13,8 @@ all_charts = $(mtlsdperf_charts)
 mtlsdperf_analysis = mtlsd-performance-and-efficiency.R
 mtlsdperf_charts = mtlsd-2009-pssa-advanced-math-histogram.png \
                    mtlsd-2009-pssa-advanced-reading-histogram.png \
-                   mtlsd-2009-pssa-scores-vs-tuition.png
+                   mtlsd-2009-pssa-scores-vs-tuition.png \
+                   mtlsd-2009-pssa-scores-vs-tuition.pdf
 
 
 
