@@ -84,25 +84,42 @@ ggsave(file="mtlsd-2009-pssa-advanced-reading-histogram.png",
        width=8, height=10, dpi=100)
 
 
-adv.math.ecdf <- ecdf(pssa.all$X..Advanced.Math)
-adv.reading.ecdf <- ecdf(pssa.all$X..Advanced.Reading)
+pssa.amath <- sort(pssa.all$X..Advanced.Math)
+pssa.amath.ecdf <- ecdf(pssa.amath)(pssa.amath)
+df <- data.frame(pssa.amath, pssa.amath.ecdf)
+qplot(pssa.amath, pssa.amath.ecdf, data=df, geom="step")
 
-pssa.rankings <-
-  with(subset(pssa.all, SD != "Other"),
-       data.frame(Grade = Grade, SD = SD, School = School,
-                  Avg.Rank = (adv.math.ecdf(X..Advanced.Math) +
-                              adv.math.ecdf(X..Advanced.Reading)) / 2,
-                  Adv.Math.Rank = adv.math.ecdf(X..Advanced.Math),
-                  Adv.Reading.Rank = adv.reading.ecdf(X..Advanced.Reading)
-                  ))
-avg.ranking.order <-
-  local({
-    x <- pssa.rankings
-    order(x$Grade, - x$Avg.Rank)
-  })
-pssa.rankings <- pssa.rankings[avg.ranking.order,]
+by.rank <- function(pssa.all) {
+  pssa.rankings <-
+    with(subset(pssa.all, SD != "Other"),
+         data.frame(Grade = Grade, SD = SD, School = School,
+                    Avg.Rank = (adv.math.ecdf(X..Advanced.Math) +
+                                adv.math.ecdf(X..Advanced.Reading)) / 2,
+                    Adv.Math.Rank = adv.math.ecdf(X..Advanced.Math),
+                    Adv.Reading.Rank = adv.reading.ecdf(X..Advanced.Reading)
+                    ))
+  avg.ranking.order <-
+    local({
+      x <- pssa.rankings
+      order(x$Grade, - x$Avg.Rank)
+    })
+  pssa.rankings <- pssa.rankings[avg.ranking.order,]
+  pssa.rankings
+}
 
-dlply(pssa.rankings, .(Grade))
+
+by.rank <- function(df) {
+  with(df, local({
+    M.ecdf <- ecdf(X..Advanced.Math)(X..Advanced.Math)
+    R.ecdf <- ecdf(X..Advanced.Math)(X..Advanced.Reading)
+    df2 <- data.frame(Grade = Grade, SD = SD, School = School,
+                      Avg.Rank = (M.ecdf + R.ecdf) / 2,
+                      Adv.Math.Rank = M.ecdf,
+                      Adv.Reading.Rank = R.ecdf)
+    subset(df2, SD != "Other")
+  }))
+}
+dlply(pssa.all, .(Grade), by.rank)
 
 
 
@@ -130,6 +147,22 @@ local({
               hjust = -0.10, vjust = 0.5, size = 2, angle = -60)
 })
 
+
+local({
+  d <- ddply(pssa.all.x, .(Grade), function(df) {
+    xs <- df$X..Advanced.Reading
+    usxs <- sort(unique(xs))
+    data.frame(X..Advanced.Reading = usxs, read.ecdf = ecdf(xs)(usxs))
+  })
+  ggplot(aes(X..Advanced.Reading, read.ecdf), data = pssa.all.x.interest) +
+    facet_grid(Grade ~ .) +
+    geom_step(data = d) +
+    geom_point(aes(colour = SD), data = pssa.all.x.interest) +
+    scale_colour_manual(name = "School District",
+                        value = sd.colours[-length(sd.colours)]) +
+    geom_text(aes(label = School),
+              hjust = -0.10, vjust = 0.5, size = 2, angle = -60)
+})
 
 
 ##=============================================================================
