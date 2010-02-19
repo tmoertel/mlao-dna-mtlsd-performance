@@ -84,42 +84,28 @@ ggsave(file="mtlsd-2009-pssa-advanced-reading-histogram.png",
        width=8, height=10, dpi=100)
 
 
+# Plot advanced-math ECDF
 pssa.amath <- sort(pssa.all$X..Advanced.Math)
 pssa.amath.ecdf <- ecdf(pssa.amath)(pssa.amath)
 df <- data.frame(pssa.amath, pssa.amath.ecdf)
 qplot(pssa.amath, pssa.amath.ecdf, data=df, geom="step")
 
-by.rank <- function(pssa.all) {
-  pssa.rankings <-
-    with(subset(pssa.all, SD != "Other"),
-         data.frame(Grade = Grade, SD = SD, School = School,
-                    Avg.Rank = (adv.math.ecdf(X..Advanced.Math) +
-                                adv.math.ecdf(X..Advanced.Reading)) / 2,
-                    Adv.Math.Rank = adv.math.ecdf(X..Advanced.Math),
-                    Adv.Reading.Rank = adv.reading.ecdf(X..Advanced.Reading)
-                    ))
-  avg.ranking.order <-
-    local({
-      x <- pssa.rankings
-      order(x$Grade, - x$Avg.Rank)
-    })
-  pssa.rankings <- pssa.rankings[avg.ranking.order,]
-  pssa.rankings
-}
 
+# Rank schools by average percentile
 
 by.rank <- function(df) {
   with(df, local({
     M.ecdf <- ecdf(X..Advanced.Math)(X..Advanced.Math)
-    R.ecdf <- ecdf(X..Advanced.Math)(X..Advanced.Reading)
+    R.ecdf <- ecdf(X..Advanced.Reading)(X..Advanced.Reading)
     df2 <- data.frame(Grade = Grade, SD = SD, School = School,
                       Avg.Rank = (M.ecdf + R.ecdf) / 2,
                       Adv.Math.Rank = M.ecdf,
                       Adv.Reading.Rank = R.ecdf)
-    subset(df2, SD != "Other")
+    df2 <- subset(df2, SD != "Other")
+    df2[order(df2$Avg.Rank, decreasing=T),]
   }))
 }
-dlply(pssa.all, .(Grade), by.rank)
+ddply(pssa.all, .(Grade), by.rank)
 
 
 
@@ -190,15 +176,12 @@ pssa.all.renamed <-
   within(pssa.all, {
     Advanced.Reading <- X..Advanced.Reading; X..Advanced.Reading <- NULL
     Advanced.Math <- X..Advanced.Math; X..Advanced.Math <- NULL
-    Proficient.Reading <- X..Proficient.Reading; X..Proficient.Reading <- NULL
-    Proficient.Math <- X..Proficient.Math; X..Proficient.Math <- NULL
   })
 
 pssa.all.melted <-
   melt(pssa.all.renamed,
        id=c("Grade", "SD", "District", "School"),
-       measure=c("Advanced.Math", "Advanced.Reading",
-         "Proficient.Math", "Proficient.Reading"))
+       measure=c("Advanced.Math", "Advanced.Reading"))
 
 pssa.all.melted.vs.tuition <-
   merge(pssa.all.melted, tuition.rates, sort=T,
@@ -220,7 +203,8 @@ qplot(value, Tuition, data=pssa.all.melted.vs.tuition,
       colour = SD) +
   geom_point(data=subset(pssa.all.melted.vs.tuition, SD != "Other")) +
   facet_grid(Grade ~ variable, margins=T) +
-  scale_y_continuous(formatter="dollar") +
+  scale_x_continuous(breaks=c(0, 25, 50, 75, 100)) +
+  scale_y_continuous(formatter="dollar", breaks=c(10000,15000)) +
   scale_colour_manual(name = "School District",
                       value = sd.colours)
 
