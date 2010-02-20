@@ -21,22 +21,33 @@ options(digits = 2)
 require("ggplot2")
 
 
-sd.abbreviations <- c("MTL", "USC", "Other")
-sd.colours <- c("blue", "red", "darkgray")
+sd.abbreviations <- c("MTL", "USC", "BP", "Other")
+sd.colours <- c("blue", "red", "green", "darkgray")
 
 
 ##=============================================================================
 ## PERFORMANCE ANALYSIS
 ##
-## I review performance, as measured by 2008-09 PSSA reading and math results.
+## I review performance, as measured by 2008-09 PSSA math, reading, writing,
+## and science results.
 ##=============================================================================
 
 ## Source:  PA Dept. of Education 2008-2009 PSSA Results
 ## Source:  http://www.pde.state.pa.us/a_and_t/lib/a_and_t/PSSA_Results_Math_and_Reading_School_2009.xls
 
-pssa <- read.csv("data/PSSA_Results_Math_and_Reading_School_2009.csv",
-                 skip = 3,
-                 na.strings = "#NULL!")
+pssa.mr <- read.csv("data/PSSA_Results_Math_and_Reading_School_2009.csv",
+                    skip = 3,
+                    na.strings = "#NULL!")
+
+pssa.w <- read.csv("data/PSSA_Results_Writing_School_2009.csv",
+                   skip = 3,
+                   na.strings = "#NULL!")
+
+pssa.s <- read.csv("data/PSSA_Results_Science_School_2009.csv",
+                   skip = 3,
+                   na.strings = "#NULL!")
+
+pssa <- merge(merge(pssa.mr, pssa.w, all=T), pssa.s, all=T)
 
 pssa.all <- subset(pssa, Group == "All students")
 pssa.all <-
@@ -46,7 +57,9 @@ pssa.all <-
               "MTL",
               ifelse(District == "UPPER SAINT CLAIR SD",
                      "USC",
-                     "Other")))
+                     ifelse(District == "BETHEL PARK SD",
+                            "BP",
+                            "Other"))))
 pssa.all <- within(pssa.all, {
   SD <- factor(SD, levels = sd.abbreviations)
 })
@@ -56,6 +69,30 @@ qplot(X..Advanced.Math,
       xlab = "Percentage of students demonstrating advanced math skills",
       ylab = "Count of schools",
       data = pssa.all,
+      geom = "histogram",
+      binwidth = 1,
+      fill = SD,
+      facets = Grade ~ . ) +
+  scale_fill_manual(name = "School District",
+                    value = sd.colours)
+
+qplot(X..Advanced.Writing,
+      main = "How Mt. Lebanon compares in the 2009 PSSA tests: advanced writing",
+      xlab = "Percentage of students demonstrating advanced math skills",
+      ylab = "Count of schools",
+      data = subset(pssa.all, !is.na(X..Advanced.Writing)),
+      geom = "histogram",
+      binwidth = 1,
+      fill = SD,
+      facets = Grade ~ . ) +
+  scale_fill_manual(name = "School District",
+                    value = sd.colours)
+
+qplot(X..Advanced.Science,
+      main = "How Mt. Lebanon compares in the 2009 PSSA tests: advanced science",
+      xlab = "Percentage of students demonstrating advanced science skills",
+      ylab = "Count of schools",
+      data = subset(pssa.all, !is.na(X..Advanced.Science)),
       geom = "histogram",
       binwidth = 1,
       fill = SD,
@@ -93,20 +130,20 @@ qplot(pssa.amath, pssa.amath.ecdf, data=df, geom="step")
 
 # Rank schools by average percentile
 
-by.rank <- function(df) {
-  with(df, local({
-    M.ecdf <- ecdf(X..Advanced.Math)(X..Advanced.Math)
-    R.ecdf <- ecdf(X..Advanced.Reading)(X..Advanced.Reading)
-    df2 <- data.frame(Grade = Grade, SD = SD, School = School,
-                      Avg.Rank = (M.ecdf + R.ecdf) / 2,
-                      Adv.Math.Rank = M.ecdf,
-                      Adv.Reading.Rank = R.ecdf)
-    df2 <- subset(df2, SD != "Other")
-    df2[order(df2$Avg.Rank, decreasing=T),]
+rank.on <- function(var) {
+  X <- substitute(var)
+  by.rank <- eval(bquote(function(df) {
+    with(df, local({
+      V.ecdf <- ecdf(.(X))(.(X))
+      df2 <- data.frame(Grade = Grade, SD = SD, School = School,
+                        Rank = V.ecdf)
+      df2 <- subset(df2, SD != "Other")
+      df2[order(df2$Rank, decreasing=T),]
+    }))
   }))
+  df <- eval(bquote(subset(pssa.all, !is.na(.(X)))))
+  ddply(df, .(Grade), by.rank)
 }
-ddply(pssa.all, .(Grade), by.rank)
-
 
 
 pssa.all.x <-
@@ -176,12 +213,15 @@ pssa.all.renamed <-
   within(pssa.all, {
     Advanced.Reading <- X..Advanced.Reading; X..Advanced.Reading <- NULL
     Advanced.Math <- X..Advanced.Math; X..Advanced.Math <- NULL
+    Advanced.Writing <- X..Advanced.Writing; X..Advanced.Writing <- NULL
+    Advanced.Science <- X..Advanced.Science; X..Advanced.Science <- NULL
   })
 
 pssa.all.melted <-
   melt(pssa.all.renamed,
        id=c("Grade", "SD", "District", "School"),
-       measure=c("Advanced.Math", "Advanced.Reading"))
+       measure=c("Advanced.Math", "Advanced.Reading",
+                 "Advanced.Writing", "Advanced.Science"))
 
 pssa.all.melted.vs.tuition <-
   merge(pssa.all.melted, tuition.rates, sort=T,
@@ -201,9 +241,11 @@ qplot(value, Tuition, data=pssa.all.melted.vs.tuition,
       ylab = "Tuition (lower is better)",
       alpha = I(0.25),
       colour = SD) +
-  geom_point(data=subset(pssa.all.melted.vs.tuition, SD != "Other")) +
+  geom_point(data=subset(pssa.all.melted.vs.tuition,
+                         SD != "Other" & SD != "MTL")) +
+  geom_point(data=subset(pssa.all.melted.vs.tuition, SD == "MTL")) +
   facet_grid(Grade ~ variable, margins=T) +
-  scale_x_continuous(breaks=c(0, 25, 50, 75, 100)) +
+  scale_x_continuous(breaks=c(25, 50, 75)) +
   scale_y_continuous(formatter="dollar", breaks=c(10000,15000)) +
   scale_colour_manual(name = "School District",
                       value = sd.colours)
