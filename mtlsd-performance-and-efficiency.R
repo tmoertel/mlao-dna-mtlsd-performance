@@ -152,7 +152,7 @@ pssa.all.melted.ecdf <-
 
 
 ## I now extend the subset of the per-school statistics that are
-## "interesting" -- Mt. Lebaon, Upper St. Clair, etc. -- with their
+## "interesting" -- Mt. Lebanon, Upper St. Clair, etc. -- with their
 ## ECDFs.
 
 pssa.interest.melted.ecdf <-
@@ -165,9 +165,9 @@ pssa.interest.melted.ecdf <-
 ##
 ## This graphic summarizes the performance of schools in both absolute
 ## and relative terms, relating the portion of students who tested at
-## the advance level at each school to that school's rank among all
-## Pennsylvania schools.
-##=============================================================================
+## the advanced level at each school to that school's relative rank
+## among all Pennsylvania schools.
+## =============================================================================
 
 plot.rankings <-
 qplot(value, value.ecdf,
