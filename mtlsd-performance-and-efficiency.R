@@ -200,6 +200,14 @@ ggsave(file="mtlsd-2009-pssa-rankings.pdf",
        plot = plot.rankings,
        width=8.5, height=11)
 
+ggsave(file="mtlsd-2009-pssa-rankings-T.pdf",  # tabloid size
+       plot = plot.rankings,
+       width=11, height=17)
+
+ggsave(file="mtlsd-2009-pssa-rankings-P.pdf",  # poster size
+       plot = plot.rankings,
+       width=24, height=36)
+
 
 
 ##=============================================================================
@@ -255,3 +263,11 @@ ggsave(file="mtlsd-2009-pssa-scores-vs-tuition.png",
 ggsave(file="mtlsd-2009-pssa-scores-vs-tuition.pdf",
        plot = plot.ed.eff,
        width=8.5, height=11)
+
+ggsave(file="mtlsd-2009-pssa-scores-vs-tuition-T.pdf",  # tabloid size
+       plot = plot.ed.eff,
+       width=11, height=17)
+
+ggsave(file="mtlsd-2009-pssa-scores-vs-tuition-P.pdf",  # poster size
+       plot = plot.ed.eff,
+       width=24, height=36)
