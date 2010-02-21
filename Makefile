@@ -7,26 +7,19 @@
 # 2009-11-07
 
 
-all_charts = $(mtlsdperf_charts)
-
-# MTLSD performance and educational efficiency
-mtlsdperf_analysis = mtlsd-performance-and-efficiency.R
-mtlsdperf_charts = mtlsd-2009-pssa-rankings.png \
-                   mtlsd-2009-pssa-rankings.pdf \
-                   mtlsd-2009-pssa-scores-vs-tuition.png \
-                   mtlsd-2009-pssa-scores-vs-tuition.pdf
-
+analysis = mtlsd-performance-and-efficiency.R
+charts := $(shell bin/find_charts.pl $(analysis))
 
 
 default: all
 .PHONY: default
 
 .PHONY: all
-all: $(all_charts)
+all: $(charts)
 
-$(mtlsdperf_charts): $(mtlsdperf_analysis)
-	./$(mtlsdperf_analysis)
+$(charts): $(analysis)
+	./$(analysis)
 
 .PHONY: clean
 clean:
-	rm -f $(all_charts)
+	rm -f $(charts)
