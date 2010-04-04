@@ -42,7 +42,10 @@ school.districts.of.interest <- local({
   x <- matrix(ncol=4, byrow=T,
               c("MT LEBANON SD",        "MTL",    "blue",      interest.alpha,
                 "UPPER SAINT CLAIR SD", "USC",    "red",       interest.alpha,
-                "BETHEL PARK SD",       "BP",     "green",     interest.alpha,
+                "BETHEL PARK SD",       "BTHL PK","green",     interest.alpha,
+                "NORTH ALLEGHENY SD",   "N ALG",  "brown",     interest.alpha,
+                "FOX CHAPEL AREA SD",   "FOX CH", "orange",    interest.alpha,
+                "QUAKER VALLEY SD",     "QKR VLY","purple",    interest.alpha,
                 NA,                     other.SD, other.color, other.alpha))
   x <- as.data.frame(x)
   names(x) <- c("District", "SD", "color", "alpha")
@@ -88,9 +91,9 @@ pssa <- merge.pssa(merge.pssa(pssa.mr, pssa.w), pssa.s)
 ## remove the data that has been partitioned by demographic
 ## characteristics) and add a new column "SD" to indicate whether a
 ## particular row of data refers to a school district of interest --
-## Mt. Lebanon, Upper St. Clair, or Bethel Park -- and columns to
-## indicate the colors and transparency (alpha) levels to use in
-## plotting each district.
+## Mt. Lebanon, Upper St. Clair, etc. -- and columns to indicate the
+## colors and transparency (alpha) levels to use in plotting each
+## district.
 
 pssa.all <- local({
   df <- merge(pssa, school.districts.of.interest, all.x=T)
@@ -158,6 +161,9 @@ pssa.all.melted.ecdf <-
 pssa.interest.melted.ecdf <-
   merge(subset(pssa.all.melted, SD != "Other"), pssa.all.melted.ecdf)
 
+write.csv(pssa.interest.melted.ecdf,
+          file = "pssa-school-rankings-vs-comparables.csv",
+          row.names = F)
 
 
 ##=============================================================================
